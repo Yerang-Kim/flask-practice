@@ -1,6 +1,9 @@
 import os
 from flask import Flask, render_template, request, redirect
+from wtforms.csrf.core import CSRF
 from models import db
+from flask_wtf.csrf import CSRFProtect
+from forms import RegisterForm
 
 from models import User
 
@@ -8,24 +11,22 @@ app = Flask(__name__)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        userid = request.form.get('userid')
-        username = request.form.get('username')
-        password = request.form.get('password')
-        re_password = request.form.get('re-password')
+    form = RegisterForm()
 
-        if (userid and username and password and re_password) and password == re_password:
-            user = User()
-            user.userId = userid
-            user.userName = username
-            user.password = password
+    if form.validate_on_submit():
+        user = User()
+        user.userId = form.data.get('userid')
+        user.userName = form.data.get('username')
+        user.password = form.data.get('password')
 
-            db.session.add(user)
-            db.session.commit()
+        db.session.add(user)
+        db.session.commit()
 
-            return redirect('/')
+        print('Success!')
 
-    return render_template('register.html')
+        return redirect('/')
+
+    return render_template('register.html', form=form)
 
 @app.route('/')
 def hello():
@@ -38,7 +39,10 @@ if __name__ == "__main__":
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + dbfile
     app.config['SQLALCHEMY_COMMINT_ON_TEARDOWN'] = True
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = 'sjsjijejiwcwqw'
 
+    csrf = CSRFProtect()
+    csrf.init_app(app)
     db.init_app(app)
     db.app = app
     db.create_all()
