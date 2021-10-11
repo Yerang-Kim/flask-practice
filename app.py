@@ -1,9 +1,9 @@
 import os
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session
 from wtforms.csrf.core import CSRF
 from models import db
 from flask_wtf.csrf import CSRFProtect
-from forms import RegisterForm
+from forms import RegisterForm, LoginForm
 
 from models import User
 
@@ -28,9 +28,21 @@ def register():
 
     return render_template('register.html', form=form)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+
+    if form.validate_on_submit():
+        session['userid'] = form.data.get('userid')
+
+        return redirect('/')
+    
+    return render_template('login.html', form=form)
+
 @app.route('/')
 def hello():
-    return render_template('hello.html')
+    userid = session.get('userid', None)
+    return render_template('hello.html', userid=userid)
 
 if __name__ == "__main__":
     basedir = os.path.abspath(os.path.dirname(__file__))
