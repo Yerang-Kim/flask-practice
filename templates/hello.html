@@ -1,5 +1,9 @@
 Hello world!
 
 {% if userid %}
-{{ userid }}
+{{ userid }} <a href="/logout">로그아웃</a>
+{% endif %}
+{% if not userid %}
+<a href="/login">로그인</a>
+<a href="/register">회원가입</a>
 {% endif %}
